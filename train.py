@@ -1,31 +1,16 @@
 import os
 
-import torch
-import yaml
 import numpy as np
+import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-from nltk_vi import tokenize, bag_of_words
 from model import NeuralNet
+from nltk_vi import tokenize, bag_of_words
+from utils import __basedir, load_yml, load_txt
 
-__basedir = os.path.dirname(os.path.abspath(__file__))
-
-
-def load_yaml(file):
-    with open(file, 'r', encoding='utf-8') as f:
-        try:
-            return yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            print(e)
-
-
-def load_txt(file):
-    with open(file, 'r', encoding='utf-8') as f:
-        return f.read().splitlines()
-
-
-intents = load_yaml(os.path.join(__basedir, 'intents.yaml'))['intents']
+intents = load_yml(os.path.join(__basedir, 'intents.yml'))['intents']
+ignore_words = load_txt(os.path.join(__basedir, "stopwords.txt"))
 
 all_words = []
 tags = []
@@ -40,7 +25,6 @@ for intent in intents:
         all_words.extend(w)
         xy.append((w, tag))
 
-ignore_words = load_txt(os.path.join(__basedir, "stopwords.txt"))
 all_words = [x.lower() for x in all_words if x not in ignore_words]
 
 # remove duplicates and sort
@@ -100,6 +84,7 @@ train_loader = DataLoader(
 )
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('[INFO] processing with', "GPU" if torch.cuda.is_available() else "CPU")
 
 model = NeuralNet(
     input_size,
@@ -144,4 +129,4 @@ data = {
 
 FILE = 'data/data.pth'
 torch.save(data, os.path.join(__basedir, FILE))
-print(f'training data complete. File saved to {FILE}')
+print(f'[INFO] training data complete. File saved to "{FILE}"')

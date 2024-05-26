@@ -1,10 +1,11 @@
 import os
+
 import yaml
 
 __basedir = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_yaml(file):
+def load_yml(file):
     with open(file, 'r', encoding='utf-8') as f:
         try:
             return yaml.safe_load(f)
